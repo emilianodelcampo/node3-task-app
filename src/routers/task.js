@@ -1,5 +1,6 @@
 const express = require('express')
 const Task = require('../models/task')
+const User = require('../models/user')
 const auth = require('../middleware/auth')
 const router = new express.Router()
 
@@ -21,6 +22,7 @@ router.post('/tasks', auth, async (req, res) => {
 // GET /tasks?limit=10&skip=20
 // GET /tasks?sortBy=createdAt:desc
 router.get('/tasks', auth, async (req, res) => {
+    let user = req.user;
     const match = {}
     const sort = {}
 
@@ -34,7 +36,7 @@ router.get('/tasks', auth, async (req, res) => {
     }
 
     try {
-        await req.user.populate({
+        await user.populate({
             path: 'tasks',
             match,
             options: {
@@ -42,9 +44,10 @@ router.get('/tasks', auth, async (req, res) => {
                 skip: parseInt(req.query.skip),
                 sort
             }
-        }).execPopulate()
+        })
         res.send(req.user.tasks)
     } catch (e) {
+        console.log(e)
         res.status(500).send()
     }
 })
